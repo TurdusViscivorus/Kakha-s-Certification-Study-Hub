@@ -15,14 +15,16 @@ python -m venv "$InstallDir\venv"
 $venvPython = Join-Path $InstallDir "venv\Scripts\python.exe"
 
 Write-Host "Installing dependencies..."
+$projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$requirementsPath = Join-Path $projectRoot "requirements.txt"
 & $venvPython -m pip install --upgrade pip
-& $venvPython -m pip install -r requirements.txt pyinstaller
+& $venvPython -m pip install -r $requirementsPath pyinstaller
 
 Write-Host "Copying application files..."
-Copy-Item -Recurse -Force (Join-Path $PSScriptRoot "..\app") $InstallDir
-Copy-Item -Force (Join-Path $PSScriptRoot "..\run_app.py") $InstallDir
-Copy-Item -Force (Join-Path $PSScriptRoot "..\requirements.txt") $InstallDir
-Copy-Item -Recurse -Force (Join-Path $PSScriptRoot "..\assets") $InstallDir
+Copy-Item -Recurse -Force (Join-Path $projectRoot "app") $InstallDir
+Copy-Item -Force (Join-Path $projectRoot "run_app.py") $InstallDir
+Copy-Item -Force $requirementsPath $InstallDir
+Copy-Item -Recurse -Force (Join-Path $projectRoot "assets") $InstallDir
 
 $assetDir = Join-Path $InstallDir "assets"
 $iconBase64Path = Join-Path $assetDir "kakha_icon_base64.txt"
