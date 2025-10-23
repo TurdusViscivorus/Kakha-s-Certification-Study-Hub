@@ -33,7 +33,7 @@ assets/kakha_icon_base64.txt  # Base64 icon source (installer materializes kakha
 ## Prerequisites (Windows 11)
 
 - Ability to install (or already have) 64-bit Python 3.11 or 3.12. The setup script attempts to provision Python 3.12 with `winget` automatically when it cannot find a compatible interpreter.
-- (Optional) Windows Hello support requires the Windows `winrt` package (installed automatically by the setup script)
+- (Optional) Windows Hello support requires the Windows `winrt` package on Python 3.11 or `winsdk` on Python 3.12+ (installed automatically by the setup script)
 - PowerShell execution policy that permits running trusted scripts (for example `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)
 - At least 2 GB free disk space for the virtual environment and build artifacts
 

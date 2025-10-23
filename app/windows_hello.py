@@ -8,7 +8,10 @@ LOGGER = logging.getLogger(__name__)
 try:  # pragma: no cover - only available on Windows
     from winrt.windows.security.credentials.ui import UserConsentVerifier
 except ImportError:  # pragma: no cover - gracefully degrade
-    UserConsentVerifier = None  # type: ignore
+    try:
+        from winsdk.windows.security.credentials.ui import UserConsentVerifier  # type: ignore
+    except ImportError:
+        UserConsentVerifier = None  # type: ignore
 
 
 def is_available() -> bool:
