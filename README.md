@@ -32,7 +32,7 @@ assets/kakha_icon_base64.txt  # Base64 icon source (installer materializes kakha
 
 ## Prerequisites (Windows 11)
 
-- Python 3.11 or later available in `PATH`
+- 64-bit Python 3.11 or 3.12 available in `PATH` (PySide6 and PyInstaller do not yet ship wheels for Python 3.13)
 - (Optional) Windows Hello support requires the Windows `winrt` package (installed automatically by the setup script)
 - PowerShell execution policy that permits running trusted scripts (for example `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)
 - At least 2 GB free disk space for the virtual environment and build artifacts
@@ -56,6 +56,11 @@ assets/kakha_icon_base64.txt  # Base64 icon source (installer materializes kakha
    - Launches the application immediately after the build finishes
 
 After the first run you can simply double-click the desktop shortcut (`KakhaStudyHub.exe`) to start studying. All data is saved locally under `%USERPROFILE%\KakhaStudyHub` and encrypted per user.
+
+> **Heads-up:** If the installer reports that your Python version is unsupported, install the latest 64-bit Python 3.11 or 3.12
+> release from [python.org](https://www.python.org/downloads/windows/) and re-run the script. PySide6 and PyInstaller are pulled
+> in automatically once a supported interpreter is detected.
+
 
 ## Development setup (optional)
 

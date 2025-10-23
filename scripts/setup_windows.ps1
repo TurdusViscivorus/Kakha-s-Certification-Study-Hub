@@ -6,6 +6,17 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "== Kakha's Certification Study Hub installer =="
 
+Write-Host "Checking Python version..."
+$pythonVersionString = & python -c "import sys; print('.'.join(map(str, sys.version_info[:3])))"
+if (-Not $pythonVersionString) {
+    throw "Python interpreter not found. Please install Python 3.11 or 3.12 (64-bit) and rerun the installer."
+}
+
+$pythonVersion = [Version]$pythonVersionString
+if ($pythonVersion -lt [Version]"3.11" -or $pythonVersion -ge [Version]"3.13") {
+    throw "Python $pythonVersionString detected. Install Python 3.11 or 3.12 (64-bit) before running setup_windows.ps1 so that PySide6 and PyInstaller can be installed."
+}
+
 if (-Not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
 }
