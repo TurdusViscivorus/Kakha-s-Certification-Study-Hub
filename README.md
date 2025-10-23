@@ -33,7 +33,7 @@ assets/kakha_icon_base64.txt  # Base64 icon source (installer materializes kakha
 ## Prerequisites (Windows 11)
 
 - Ability to install (or already have) 64-bit Python 3.11 or 3.12. The setup script attempts to provision Python 3.12 with `winget` automatically when it cannot find a compatible interpreter.
-- (Optional) Windows Hello support requires the Windows `winrt` package on Python 3.11 or `winsdk` on Python 3.12+ (installed automatically by the setup script)
+- (Optional) Windows Hello support is installed by the setup script when possible (`winrt` on Python 3.11 or `winsdk` on Python 3.12+). If those packages are unavailable for your environment the installer will continue, but biometric unlock will remain disabled.
 - PowerShell execution policy that permits running trusted scripts (for example `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)
 - At least 2 GB free disk space for the virtual environment and build artifacts
 
@@ -49,7 +49,8 @@ assets/kakha_icon_base64.txt  # Base64 icon source (installer materializes kakha
    The script performs the following steps automatically:
 
    - Creates an isolated virtual environment in `%USERPROFILE%\KakhaStudyHub`
-   - Installs Python dependencies and PyInstaller
+  - Installs Python dependencies and PyInstaller, failing fast if any mandatory package cannot be retrieved
+  - Attempts to add the optional Windows Hello dependency that matches your Python version and warns if the biometric package is unavailable
    - Copies the application files
    - Builds a Windows executable and materializes the custom icon from the bundled Base64 text file
    - Places a desktop shortcut named "Kakha's Certification Study Hub"
@@ -70,6 +71,7 @@ If you want to run the GUI without building the executable:
 python -m venv .venv
 .\.venv\Scripts\activate  # PowerShell
 pip install -r requirements.txt
+# Optional: install `winrt` (Python 3.11) or `winsdk` (Python 3.12+) for Windows Hello support
 python run_app.py
 ```
 

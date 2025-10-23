@@ -4,6 +4,19 @@ Param(
 
 $ErrorActionPreference = "Stop"
 
+function Invoke-ExternalCommand {
+    param (
+        [string]$Executable,
+        [string[]]$Arguments,
+        [string]$ErrorMessage
+    )
+
+    & $Executable @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw [System.Exception]::new($ErrorMessage)
+    }
+}
+
 Write-Host "== Kakha's Certification Study Hub installer =="
 
 function Get-CommandPath {
@@ -90,8 +103,31 @@ $venvPython = Join-Path $InstallDir "venv\Scripts\python.exe"
 Write-Host "Installing dependencies..."
 $projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $requirementsPath = Join-Path $projectRoot "requirements.txt"
-& $venvPython -m pip install --upgrade pip
-& $venvPython -m pip install -r $requirementsPath pyinstaller
+Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "pip", "install", "--upgrade", "pip") -ErrorMessage "Failed to upgrade pip."
+Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "pip", "install", "-r", $requirementsPath) -ErrorMessage "Failed to install required Python packages."
+Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "pip", "install", "pyinstaller") -ErrorMessage "Failed to install PyInstaller."
+
+$venvVersionString = (& $venvPython -c "import sys; print('.'.join(map(str, sys.version_info[:3])))").Trim()
+$venvVersion = [Version]$venvVersionString
+$isWindowsPlatform = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
+if ($isWindowsPlatform) {
+    if ($venvVersion.Major -eq 3 -and $venvVersion.Minor -eq 11) {
+        try {
+            Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "pip", "install", "winrt>=1.0") -ErrorMessage "Failed to install Windows Hello dependency 'winrt'."
+        }
+        catch {
+            Write-Warning "Optional Windows Hello dependency installation failed: $($_.Exception.Message)"
+        }
+    }
+    elseif ($venvVersion.Major -eq 3 -and $venvVersion.Minor -ge 12) {
+        try {
+            Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "pip", "install", "winsdk>=1.0") -ErrorMessage "Failed to install Windows Hello dependency 'winsdk'."
+        }
+        catch {
+            Write-Warning "Optional Windows Hello dependency installation failed: $($_.Exception.Message)"
+        }
+    }
+}
 
 Write-Host "Copying application files..."
 Copy-Item -Recurse -Force (Join-Path $projectRoot "app") $InstallDir
@@ -110,7 +146,7 @@ if (-Not (Test-Path $iconPath)) {
 
 Write-Host "Building Windows executable..."
 Push-Location $InstallDir
-& $venvPython -m PyInstaller run_app.py --noconfirm --windowed --name "KakhaStudyHub" --icon $iconPath
+Invoke-ExternalCommand -Executable $venvPython -Arguments @("-m", "PyInstaller", "run_app.py", "--noconfirm", "--windowed", "--name", "KakhaStudyHub", "--icon", $iconPath) -ErrorMessage "PyInstaller build failed."
 Pop-Location
 
 $exePath = Join-Path $InstallDir "dist\KakhaStudyHub\KakhaStudyHub.exe"

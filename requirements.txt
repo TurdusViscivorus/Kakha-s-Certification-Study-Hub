@@ -4,5 +4,3 @@ cryptography>=41.0
 argon2-cffi>=23.1
 matplotlib>=3.8
 reportlab>=4.0
-winrt>=1.0; platform_system=='Windows' and python_version < '3.12'
-winsdk>=1.0; platform_system=='Windows' and python_version >= '3.12'
