@@ -6,23 +6,85 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "== Kakha's Certification Study Hub installer =="
 
-Write-Host "Checking Python version..."
-$pythonVersionString = & python -c "import sys; print('.'.join(map(str, sys.version_info[:3])))"
-if (-Not $pythonVersionString) {
-    throw "Python interpreter not found. Please install Python 3.11 or 3.12 (64-bit) and rerun the installer."
+function Get-CommandPath {
+    param(
+        [System.Management.Automation.CommandInfo]$Command
+    )
+
+    if ($null -ne $Command) {
+        if ($Command.Source) { return $Command.Source }
+        if ($Command.Path) { return $Command.Path }
+        if ($Command.Definition) { return $Command.Definition }
+    }
+
+    return $null
 }
 
-$pythonVersion = [Version]$pythonVersionString
-if ($pythonVersion -lt [Version]"3.11" -or $pythonVersion -ge [Version]"3.13") {
-    throw "Python $pythonVersionString detected. Install Python 3.11 or 3.12 (64-bit) before running setup_windows.ps1 so that PySide6 and PyInstaller can be installed."
+function Get-CompatiblePython {
+    $pythonLauncher = Get-Command py -ErrorAction SilentlyContinue
+    if ($pythonLauncher) {
+        foreach ($requestedVersion in @("3.12", "3.11")) {
+            $versionOutput = & py -$requestedVersion -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>$null
+            if ($LASTEXITCODE -eq 0 -and $versionOutput) {
+                $executable = & py -$requestedVersion -c "import sys; print(sys.executable)" 2>$null
+                if ($executable -and (Test-Path $executable)) {
+                    return [PSCustomObject]@{ Version = [Version]$versionOutput.Trim(); Executable = $executable.Trim() }
+                }
+            }
+        }
+    }
+
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    $pythonPath = Get-CommandPath $pythonCmd
+    if ($pythonPath) {
+        $versionOutput = & $pythonPath -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $versionOutput) {
+            $version = [Version]$versionOutput.Trim()
+            if ($version -ge [Version]"3.11" -and $version -lt [Version]"3.13") {
+                return [PSCustomObject]@{ Version = $version; Executable = $pythonPath }
+            }
+        }
+    }
+
+    return $null
 }
+
+function Ensure-CompatiblePython {
+    Write-Host "Checking Python version..."
+    $pythonInfo = Get-CompatiblePython
+    if ($pythonInfo) {
+        return $pythonInfo
+    }
+
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    $wingetPath = Get-CommandPath $winget
+    if ($wingetPath) {
+        Write-Host "Python 3.11/3.12 not found. Attempting to install Python 3.12 via winget..."
+        try {
+            & $wingetPath install -e --id Python.Python.3.12 --scope=CurrentUser --accept-package-agreements --accept-source-agreements
+        }
+        catch {
+            Write-Warning "winget install failed: $($_.Exception.Message)"
+        }
+
+        $pythonInfo = Get-CompatiblePython
+        if ($pythonInfo) {
+            return $pythonInfo
+        }
+    }
+
+    throw "Compatible Python interpreter not found. Please install 64-bit Python 3.11 or 3.12 and rerun the installer."
+}
+
+$pythonInfo = Ensure-CompatiblePython
+Write-Host "Using Python $($pythonInfo.Version.ToString()) at $($pythonInfo.Executable)"
 
 if (-Not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
 }
 
 Write-Host "Creating virtual environment..."
-python -m venv "$InstallDir\venv"
+& $pythonInfo.Executable -m venv "$InstallDir\venv"
 $venvPython = Join-Path $InstallDir "venv\Scripts\python.exe"
 
 Write-Host "Installing dependencies..."
