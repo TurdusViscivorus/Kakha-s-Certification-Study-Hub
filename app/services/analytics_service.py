@@ -61,7 +61,11 @@ class AnalyticsService:
         sections = {}
         for attempt in attempts:
             for response in attempt.responses:
-                metadata = response.question.metadata if response.question and response.question.metadata else {}
+                metadata = (
+                    response.question.metadata_json
+                    if response.question and response.question.metadata_json
+                    else {}
+                )
                 section = metadata.get("section", "General")
                 sections.setdefault(section, 0)
                 sections[section] += 1

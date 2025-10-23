@@ -86,7 +86,7 @@ class Flashcard(Base):
     deck_id = Column(Integer, ForeignKey("decks.id", ondelete="CASCADE"))
     card_type = Column(String(32), nullable=False)
     data = Column(LargeBinary, nullable=False)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
     created_at = Column(DateTime, default=dt.datetime.utcnow)
     updated_at = Column(DateTime, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow)
 
@@ -116,7 +116,7 @@ class ExamBlueprint(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(128), nullable=False)
     description = Column(Text)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
 
     user = relationship("User", back_populates="quiz_blueprints")
     sections = relationship(
@@ -148,7 +148,7 @@ class QuizQuestion(Base):
     answer = Column(LargeBinary, nullable=False)
     explanation = Column(LargeBinary)
     references = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
 
 
 class QuizAttempt(Base):
@@ -243,7 +243,7 @@ class ContentPack(Base):
     name = Column(String(128), nullable=False)
     version = Column(String(32), nullable=False)
     checksum = Column(String(128), nullable=False)
-    metadata = Column(JSON, default=dict)
+    metadata_json = Column("metadata", JSON, default=dict)
     manifest = Column(LargeBinary, nullable=False)
     installed_at = Column(DateTime, default=dt.datetime.utcnow)
 

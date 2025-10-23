@@ -44,7 +44,7 @@ class FlashcardRepository:
             deck_id=deck_id,
             card_type=card_type,
             data=data,
-            metadata=metadata or {},
+            metadata_json=metadata or {},
         )
         self.session.add(card)
         self.session.flush()

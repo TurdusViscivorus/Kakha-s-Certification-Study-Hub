@@ -95,7 +95,7 @@ class QuizService:
                     answer=self._decrypt(q.answer),
                     explanation=self._decrypt(q.explanation) if q.explanation else {},
                     references=q.references or [],
-                    metadata=q.metadata or {},
+                    metadata=q.metadata_json or {},
                 )
                 for q in repo.list_questions(user_id)
             ]

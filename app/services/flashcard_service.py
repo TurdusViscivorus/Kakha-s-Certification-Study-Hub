@@ -113,7 +113,7 @@ class FlashcardService:
                 deck_id=card.deck_id,
                 card_type=card.card_type,
                 content=content,
-                metadata=card.metadata,
+                metadata=card.metadata_json,
             )
 
     def list_flashcards(self, user_id: int) -> List[FlashcardDTO]:
@@ -128,7 +128,7 @@ class FlashcardService:
                         deck_id=card.deck_id,
                         card_type=card.card_type,
                         content=self._decrypt_payload(card.data),
-                        metadata=card.metadata,
+                        metadata=card.metadata_json,
                     )
                 )
             return results

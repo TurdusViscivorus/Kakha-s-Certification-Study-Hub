@@ -16,7 +16,10 @@ class QuizRepository:
         self, *, user_id: int, name: str, description: str, metadata: dict
     ) -> ExamBlueprint:
         blueprint = ExamBlueprint(
-            user_id=user_id, name=name, description=description, metadata=metadata
+            user_id=user_id,
+            name=name,
+            description=description,
+            metadata_json=metadata,
         )
         self.session.add(blueprint)
         self.session.flush()
@@ -50,7 +53,7 @@ class QuizRepository:
             answer=answer,
             explanation=explanation,
             references=references,
-            metadata=metadata,
+            metadata_json=metadata,
         )
         self.session.add(question)
         self.session.flush()

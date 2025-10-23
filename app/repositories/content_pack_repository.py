@@ -20,7 +20,7 @@ class ContentPackRepository:
             name=name,
             version=version,
             checksum=checksum,
-            metadata=metadata,
+            metadata_json=metadata,
             manifest=manifest,
         )
         self.session.add(pack)
